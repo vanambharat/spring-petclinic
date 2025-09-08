@@ -63,6 +63,9 @@ pipeline {
             steps {
                 echo '6. Deploying to Azure Kubernetes Service (AKS)...'
                 withCredentials([usernamePassword(credentialsId: 'azure-credentials', passwordVariable: 'AZURE_PASSWORD', usernameVariable: 'AZURE_CLIENT_ID')]) {
+                    // Dynamically update the deployment manifest with the correct image tag
+                    sh "sed -i 's/:BUILD_NUMBER_HERE/:${env.BUILD_NUMBER}/g' k8s/deployment.yaml"
+                    
                     sh "az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_PASSWORD} --tenant 834c1d4c-7eb5-46e0-8638-f74978f78b67"
                     sh "az aks get-credentials --resource-group vm1_group_09080039 --name petclinicaks --overwrite-existing"
                     sh "kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml"
